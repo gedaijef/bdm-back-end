@@ -14,7 +14,7 @@ exports.insertCliente = async (req, res) => {
     async function verificarCPF(cpf) {
       const result = await db.query(
         `
-        SELECT cpf FROM cliente
+        SELECT cpf FROM client
         WHERE cpf = $1
         `,
         [cpf]
@@ -25,8 +25,8 @@ exports.insertCliente = async (req, res) => {
     async function verificarTelefone(telefone) {
       const result = await db.query(
         `
-        SELECT numero FROM cliente
-        WHERE numero = $1
+        SELECT phone_number FROM client
+        WHERE phone_number = $1
         `,
         [telefone]
       );
@@ -46,8 +46,8 @@ exports.insertCliente = async (req, res) => {
         .json({ error: "Telefone já cadastrado", status: 409 });
     }
     await db.query(
-      `CALL inserir_novo_cliente($1, $2, $3, $4, $5, $6)`,
-      [telefone, nome, profissao, cpf, email, categorias]
+      `CALL insert_new_client($1, $2, $3, $4, $5, $6)`,
+      [cpf, telefone, profissao, email, categorias, nome]
     );
 
     res.status(201).json({ message: "Usuário adicionado com sucesso", status: 201});
@@ -68,7 +68,7 @@ exports.deleteCliente = async (req,res) =>{
     async function verificarCPF(cpf){
       const result = await db.query(
         `
-        SELECT * FROM cliente
+        SELECT * FROM client
         WHERE cpf = $1
         `,
         [cpf]
@@ -82,7 +82,7 @@ exports.deleteCliente = async (req,res) =>{
         .json({ error: "CPF não encontrado", status: 404 });
     }
     await db.query(
-      `CALL deletar_cliente_cpf($1)`,
+      `CALL delete_client_by_cpf($1)`,
       [cpf]
     );
 
@@ -102,7 +102,7 @@ exports.searchCliente = async (req,res) =>{
     }
 
     const result = await db.query(
-      `SELECT nome, numero, email, cpf FROM cliente WHERE cpf = $1`,
+      `SELECT name, phone_number, email, cpf FROM client WHERE cpf = $1`,
       [cpf]
     );
     

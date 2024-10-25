@@ -4,7 +4,7 @@ exports.listCategories = async (req, res) => {
     try {
       const result = await db.query(
         `
-        SELECT * FROM categoria ORDER BY codigo
+        SELECT * FROM default_category order by id 
         `
       );
   

@@ -13,9 +13,9 @@ exports.selectNews = async (req, res) => {
 
       result = await db.query(
         `
-          select *, cm.codigo as codigo_conexao from mensagem m
-          join categoria_mensagem cm on m.codigo = cm.mensagem_codigo  
-          where cm.categoria_codigo = $1 and m."data" = $2
+          select * from group_message gm 
+          join default_category_group_message dcgm on gm.id = dcgm.group_message_id 
+          where dcgm.default_category_id = $1 and gm."date" = $2
         `,
         [categoria, data]
       );
@@ -39,9 +39,9 @@ exports.selectByCategory = async (req,res) => {
     
     const result = await db.query(
         `
-          select *, cm.codigo as codigo_conexao from mensagem m
-          join categoria_mensagem cm on m.codigo = cm.mensagem_codigo  
-          where cm.categoria_codigo = $1
+          select * from group_message gm 
+          join default_category_group_message dcgm on gm.id = dcgm.group_message_id 
+          where dcgm.default_category_id = $1
           `,
         [categoria]
       );
@@ -65,9 +65,9 @@ exports.selectByDate = async (req,res) => {
     
       result = await db.query(
         `
-          select *, cm.codigo as codigo_conexao from mensagem m
-          join categoria_mensagem cm on m.codigo = cm.mensagem_codigo  
-          where m."data" = $1
+          select * from group_message gm 
+          join default_category_group_message dcgm on gm.id = dcgm.group_message_id 
+          where gm."date" = $1
           `,
         [data]
       );
