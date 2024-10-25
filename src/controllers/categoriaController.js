@@ -4,7 +4,7 @@ exports.listCategories = async (req, res) => {
     try {
       const result = await db.query(
         `
-        SELECT * FROM default_category order by id 
+        SELECT * FROM default_category WHERE id < 8 order by id  
         `
       );
   
