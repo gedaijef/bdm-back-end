@@ -2,24 +2,67 @@ const db = require("../config/db");
 
 exports.insertCliente = async (req, res) => {
   try {
-    const { nome, telefone, profissao, email, cpf, categorias } = req.body;
+    const {
+      nome,
+      telefone,
+      profissao,
+      email,
+      cpf,
+      categorias,
+      empresa,
+      data_nascimento,
+    } = req.body;
 
-    // Verificação dos campos obrigatórios
-    if (!nome || !telefone || !profissao || !email || !cpf || !categorias) {
+    if (
+      !nome ||
+      !telefone ||
+      !profissao ||
+      !email ||
+      !cpf ||
+      !categorias ||
+      !empresa ||
+      !data_nascimento
+    ) {
       return res
         .status(400)
-        .json({ error: "Todos os campos devem ser preenchidos" , status: 400});
+        .json({ error: "Todos os campos devem ser preenchidos", status: 400 });
+    }
+
+    async function verificarData(data_nascimento){
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(data_nascimento)) {
+        return false;
+      }
+    
+      const data = new Date(data_nascimento);
+    
+      if (isNaN(data.getTime())) {
+        return false;
+      }
+    
+      const [ano, mes, dia] = data_nascimento.split('-').map(Number);
+      return (
+        data.getUTCFullYear() === ano &&
+        data.getUTCMonth() + 1 === mes &&
+        data.getUTCDate() === dia
+      );
     }
 
     async function verificarCPF(cpf) {
-      const result = await db.query(
-        `
-        SELECT cpf FROM client
-        WHERE cpf = $1
-        `,
-        [cpf]
-      );
-      return result.rows.length > 0;
+      cpf = cpf.replace(/[^\d]+/g, "");
+      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+      let soma = 0;
+      for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+      let resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+      if (resto !== parseInt(cpf.charAt(9))) return false;
+
+      soma = 0;
+      for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+      resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+
+      return resto === parseInt(cpf.charAt(10));
     }
 
     async function verificarTelefone(telefone) {
@@ -35,20 +78,27 @@ exports.insertCliente = async (req, res) => {
 
 /////////////////////////////////////////////////////////////////////
 
-    if (await verificarCPF(cpf)) {
-      return res
-        .status(409)
-        .json({ error: "CPF já cadastrado", status: 409 });
+    if (!(await verificarCPF(cpf))) {
+      return res.status(400).json({ error: "CPF inválido", status: 409 });
+    }
+    if (!(await verificarData(data_nascimento))) {
+      return res.status(400).json({ error: "Data de nascimento inválida", status: 409 });
     }
     if (await verificarTelefone(telefone)) {
       return res
         .status(409)
         .json({ error: "Telefone já cadastrado", status: 409 });
     }
-    await db.query(
-      `CALL insert_new_client($1, $2, $3, $4, $5, $6)`,
-      [cpf, telefone, profissao, email, categorias, nome]
-    );
+    await db.query(`CALL insert_new_client($1, $2, $3, $4, $5, $6, $7, $8)`, [
+      cpf,
+      telefone,
+      email,
+      categorias,
+      nome,
+      data_nascimento,
+      empresa,
+      profissao,
+    ]);
 
     res.status(201).json({ message: "Usuário adicionado com sucesso", status: 201});
   } catch (error) {
