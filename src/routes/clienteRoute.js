@@ -4,7 +4,7 @@ const clienteController = require('../controllers/clienteController');
 
 router.post('/addCliente', clienteController.insertCliente);
 router.post('/deleteCliente',clienteController.deleteCliente);
-router.post('/searchCliente',clienteController.searchCliente)
+router.get('/searchCliente',clienteController.searchCliente)
 router.post('/searchClienteByPhone',clienteController.searchClientebyPhone)
 
 module.exports = router;

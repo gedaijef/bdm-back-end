@@ -132,15 +132,9 @@ exports.deleteCliente = async (req,res) =>{
 
 exports.searchCliente = async (req,res) =>{
   try{
-    const {cpf} = req.body
-
-    if(!cpf){
-      return res.status(400).json({error:"Todos os campos devem ser preenchidos" , status: 400})
-    }
 
     const result = await db.query(
-      `SELECT name, phone_number, email, cpf FROM client WHERE cpf = $1`,
-      [cpf]
+      `SELECT name, phone_number, email, cpf, birth_date, company, position FROM client`
     );
     
     res.json(result.rows);
