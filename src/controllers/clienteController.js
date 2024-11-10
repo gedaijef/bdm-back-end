@@ -134,7 +134,7 @@ exports.searchCliente = async (req,res) =>{
   try{
 
     const result = await db.query(
-      `SELECT name, phone_number, email, cpf, birth_date, company, position FROM client`
+      `SELECT name, phone_number, email, cpf, birth_date, company, position FROM client ORDER BY name`
     );
     
     res.json(result.rows);
