@@ -1,3 +1,4 @@
+const { response } = require("express");
 const db = require("../config/db");
 
 async function verificarData(data_nascimento){
@@ -46,6 +47,24 @@ async function verificarTelefone(telefone) {
     [telefone]
   );
   return result.rows.length > 0;
+}
+
+exports.login = async (req,res) =>{
+  try{
+    const {password} = req.body
+
+    if(!password){
+      return res.status(400).json({error:"Insira a senha para acessar o site" , status: 400})
+    }  
+    if(password === process.env.SENHA_ADMIN){
+      res.status(202).json({ message: "Senha correta", status: 201});
+    }else{
+      res.status(401).json({ error: "Senha incorreta", status: 401});
+    }
+  }catch (error) {
+    console.error("Erro ao verificar senha", error.stack);
+    res.status(500).json({ error: "Erro no servidor", status: 500 });
+  }
 }
 
 exports.insertCliente = async (req, res) => {
@@ -134,7 +153,14 @@ exports.searchCliente = async (req,res) =>{
   try{
 
     const result = await db.query(
-      `SELECT name, phone_number, email, cpf, birth_date, company, position FROM client ORDER BY name`
+      `
+       SELECT c.name, c.phone_number, c.email, c.cpf, c.birth_date, c.company, c.position, STRING_AGG(dc.name, ', ') AS concat_categories
+       FROM default_category dc
+       join default_category_client dcc on dc.id = dcc.default_category_id
+       join client c on c.id = dcc.client_id
+       where dcc.client_id = c.id
+       group by 1,2,3,4,5,6,7, c.id
+      `
     );
     
     res.json(result.rows);
