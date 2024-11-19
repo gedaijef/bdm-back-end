@@ -46,7 +46,13 @@ async function verificarTelefone(telefone) {
     `,
     [telefone]
   );
-  return result.rows.length > 0;
+  return result.rows.length > 0
+}
+
+async function lengthTelefone(telefone){
+  if(telefone.length()==13){
+    return true
+  }return false
 }
 
 exports.login = async (req,res) =>{
@@ -106,6 +112,11 @@ exports.insertCliente = async (req, res) => {
         .status(409)
         .json({ error: "Telefone já cadastrado", status: 409 });
     }
+    if (await lengthTelefone(telefone)){
+      return res.status(400).json({error: "Telefone incorreto", status:400 })
+    }
+
+    558386601723
     await db.query(`CALL insert_new_client($1, $2, $3, $4, $5, $6, $7, $8)`, [
       cpf,
       telefone,
