@@ -50,7 +50,7 @@ async function verificarTelefone(telefone) {
 }
 
 async function lengthTelefone(telefone){
-  if(telefone.length()==13){
+  if(telefone.length==13){
     return true
   }return false
 }
@@ -112,7 +112,7 @@ exports.insertCliente = async (req, res) => {
         .status(409)
         .json({ error: "Telefone já cadastrado", status: 409 });
     }
-    if (await lengthTelefone(telefone)){
+    if (await !lengthTelefone(telefone)){
       return res.status(400).json({error: "Telefone incorreto", status:400 })
     }
 
