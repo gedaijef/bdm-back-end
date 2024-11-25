@@ -50,9 +50,10 @@ async function verificarTelefone(telefone) {
 }
 
 async function lengthTelefone(telefone){
-  if(telefone.length==13){
-    return true
-  }return false
+  let phoneStr = telefone.toString()
+  if (phoneStr.charAt(4) !== '9' || phoneStr.length !== 13) {
+    return false
+  }return true
 }
 
 exports.login = async (req,res) =>{
@@ -75,7 +76,7 @@ exports.login = async (req,res) =>{
 
 exports.insertCliente = async (req, res) => {
   try {
-    const {
+    let {
       nome,
       telefone,
       profissao,
@@ -116,7 +117,15 @@ exports.insertCliente = async (req, res) => {
       return res.status(400).json({error: "Telefone incorreto", status:400 })
     }
 
-    558386601723
+    console.log(telefone)
+
+    telefone = telefone.toString()
+    telefone = telefone.split('')
+    telefone.splice(4, 0, '9');  
+    telefone = telefone.join('');
+
+    console.log(telefone)
+
     await db.query(`CALL insert_new_client($1, $2, $3, $4, $5, $6, $7, $8)`, [
       cpf,
       telefone,
