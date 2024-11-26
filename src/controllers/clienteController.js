@@ -1,5 +1,7 @@
 const { response } = require("express");
 const db = require("../config/db");
+const { exec } = require("child_process");
+const { log } = require("console");
 
 async function verificarData(data_nascimento){
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data_nascimento)) {
@@ -54,6 +56,12 @@ async function lengthTelefone(telefone){
   if (phoneStr.charAt(4) !== '9' || phoneStr.length !== 13) {
     return false
   }return true
+}
+
+async function verificarEmail(email){
+  if(email.includes('@') && email.includes('.com')){
+    return true
+  }return false
 }
 
 exports.login = async (req,res) =>{
@@ -113,18 +121,12 @@ exports.insertCliente = async (req, res) => {
         .status(409)
         .json({ error: "Telefone já cadastrado", status: 409 });
     }
-    if (await !lengthTelefone(telefone)){
+    if (!(await lengthTelefone(telefone))){
       return res.status(400).json({error: "Telefone incorreto", status:400 })
     }
-
-    console.log(telefone)
-
-    telefone = telefone.toString()
-    telefone = telefone.split('')
-    telefone.splice(4, 0, '9');  
-    telefone = telefone.join('');
-
-    console.log(telefone)
+    if (!(await verificarEmail(email))){
+      return res.status(400).json({error:"Email inválido",status:400 })
+    }
 
     await db.query(`CALL insert_new_client($1, $2, $3, $4, $5, $6, $7, $8)`, [
       cpf,
@@ -136,6 +138,21 @@ exports.insertCliente = async (req, res) => {
       empresa,
       profissao,
     ]);
+
+    console.log(cpf+'\n'+telefone+'\n'+email+'\n'+categorias+'\n'+nome+'\n'+data_nascimento+'\n'+empresa+'\n'+profissao);
+    
+
+    // exec("python3 Mandar_mensagem.py", (error, stdout, stderr) => {
+    //   if (error) {
+    //     console.error(`Erro ao executar o script: ${error.message}`);
+    //     return;
+    //   }
+    //   if (stderr) {
+    //     console.error(`Erro no script: ${stderr}`);
+    //     return;
+    //   }
+    //   console.log(`Saída do script: ${stdout}`);
+    // });
 
     res.status(201).json({ message: "Usuário adicionado com sucesso", status: 201});
   } catch (error) {
