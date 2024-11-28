@@ -122,11 +122,39 @@ exports.insertCliente = async (req, res) => {
         .json({ error: "Telefone já cadastrado", status: 409 });
     }
     if (!(await lengthTelefone(telefone))){
-      return res.status(400).json({error: "Telefone incorreto", status:400 })
+      phoneStr = telefone.toString()
+      phoneStr = phoneStr.slice(0, 3) + "9" + phoneStr.slice(3)
+      if (!(await lengthTelefone(phoneStr))){
+        return res.status(400).json({error: "Telefone incorreto", status:400 })
+      }
     }
     if (!(await verificarEmail(email))){
       return res.status(400).json({error:"Email inválido",status:400 })
     }
+
+    const categoriasArray = categorias.split(',').map(Number);
+
+    const categoriasConcat = await db.query(
+      `SELECT string_agg(name, ', ') AS nomes_concatenados 
+      FROM default_category 
+      WHERE id = ANY($1);`,
+    [categoriasArray]
+    );
+    
+    exec(
+      `python3 Mandar_mensagem.py "${nome}" "${telefone}" "${categoriasConcat+" e Serviços"}"`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Erro ao executar o script: ${error.message}`);
+          return res.status(500).json({ error: "Erro ao executar script", status: 500 });
+        }
+        if (stderr) {
+          console.error(`Erro no script: ${stderr}`);
+          return res.status(500).json({ error: "Erro no script Python", status: 500 });
+        }
+        console.log(`Saída do script: ${stdout}`);
+      }
+    );
 
     await db.query(`CALL insert_new_client($1, $2, $3, $4, $5, $6, $7, $8)`, [
       cpf,
@@ -140,19 +168,6 @@ exports.insertCliente = async (req, res) => {
     ]);
 
     console.log(cpf+'\n'+telefone+'\n'+email+'\n'+categorias+'\n'+nome+'\n'+data_nascimento+'\n'+empresa+'\n'+profissao);
-    
-
-    // exec("python3 Mandar_mensagem.py", (error, stdout, stderr) => {
-    //   if (error) {
-    //     console.error(`Erro ao executar o script: ${error.message}`);
-    //     return;
-    //   }
-    //   if (stderr) {
-    //     console.error(`Erro no script: ${stderr}`);
-    //     return;
-    //   }
-    //   console.log(`Saída do script: ${stdout}`);
-    // });
 
     res.status(201).json({ message: "Usuário adicionado com sucesso", status: 201});
   } catch (error) {
