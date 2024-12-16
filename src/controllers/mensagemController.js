@@ -34,6 +34,7 @@ exports.selectNewsDetail = async (req, res) => {
     $1,  
     $2,  
     $3)
+    ORDER BY date DESC, time DESC
     `,
       [data_inicio, data_fim, categoria]
     );
