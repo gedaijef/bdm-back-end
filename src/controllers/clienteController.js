@@ -152,7 +152,6 @@ exports.insertCliente = async (req, res) => {
           console.error(`Erro no script: ${stderr}`);
           return res.status(500).json({ error: "Erro no script Python", status: 500 });
         }
-        console.log(`Saída do script: ${stdout}`);
       }
     );
 
@@ -166,8 +165,6 @@ exports.insertCliente = async (req, res) => {
       empresa,
       profissao,
     ]);
-
-    console.log(cpf+'\n'+telefone+'\n'+email+'\n'+categorias+'\n'+nome+'\n'+data_nascimento+'\n'+empresa+'\n'+profissao);
 
     res.status(201).json({ message: "Usuário adicionado com sucesso", status: 201});
   } catch (error) {

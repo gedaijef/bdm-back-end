@@ -25,10 +25,8 @@ exports.selectNewsDetail = async (req, res) => {
   try {
     const { categoria, data_inicio, data_fim } = req.body;
 
-    console.log(categoria, data_inicio, data_fim)
-
     result = await db.query(
-      `
+    `
     SELECT content, distributed, id, time, date
     FROM get_group_messages_by_date_category(
     $1,  
